@@ -109,7 +109,7 @@ $totalFamilies = count($families);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>My Zakat</title>
-    <link rel="stylesheet" href="assets/css/public.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/public.css">
 </head>
 
 <body>

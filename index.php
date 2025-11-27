@@ -1,7 +1,8 @@
 <?php
 session_start();
 
-$rootPath = dirname(__DIR__);
+// Root proyek berada di lokasi file ini (htdocs pada hosting)
+$rootPath = __DIR__;
 
 $routes = [
     'dashboard'    => $rootPath . '/app/Controllers/dashboard.php',
