@@ -115,7 +115,7 @@ $setting = fetch_settings($mysqli);
     <meta charset="utf-8">
     <title>Dashboard - Input Keluarga (MySQL)</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/style.css">
 </head>
 
 <body>
@@ -222,7 +222,7 @@ $setting = fetch_settings($mysqli);
             infaqValue: 15000
         };
     </script>
-    <script src="assets/js/keluarga.js"></script>
+    <script src="<?= BASE_URL ?>public/assets/js/keluarga.js"></script>
 </body>
 
 </html>
