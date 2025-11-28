@@ -2,8 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once dirname(__DIR__, 2) . '/config/config.php';
-require_once dirname(__DIR__) . '/Helpers/helpers.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/helpers.php';
 
 /* --- Ambil setting --- */
 $setting = fetch_settings($mysqli);
@@ -109,7 +109,7 @@ $totalFamilies = count($families);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>My Zakat</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/public.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/public.css">
 </head>
 
 <body>

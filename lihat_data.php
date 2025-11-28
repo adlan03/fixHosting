@@ -3,8 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 ob_start();
-require_once dirname(__DIR__, 2) . '/config/config.php';
-require_once dirname(__DIR__) . '/Helpers/helpers.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/family_service.php';
 
 // pastikan koneksi tersedia
@@ -55,7 +55,7 @@ $overallTotals = calculate_overall_totals($data, $setting);
     <meta charset="utf-8">
     <title>Lihat Data - Infaq</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
 </head>
 
 <body>

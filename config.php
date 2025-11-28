@@ -3,7 +3,7 @@
 
 // ====== PATH & URL BASE ======
 if (!defined('BASE_PATH')) {
-    define('BASE_PATH', dirname(__DIR__));
+    define('BASE_PATH', __DIR__);
 }
 
 if (!defined('BASE_URL')) {
@@ -19,7 +19,7 @@ if (!defined('BASE_URL')) {
         define('BASE_URL', $scheme . '://' . $host . '/' . $prefix);
     } else {
         // Ubah nilai berikut sesuai direktori root proyek saat lokal
-        define('BASE_URL', 'http://localhost/fixHosting/');
+        define('BASE_URL', 'http://localhost/');
     }
 }
 
