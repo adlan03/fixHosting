@@ -5,11 +5,11 @@ session_start();
 $rootPath = __DIR__;
 
 $routes = [
-    'dashboard'    => $rootPath . '/app/Controllers/dashboard.php',
-    'lihat_data'   => $rootPath . '/app/Controllers/lihat_data.php',
-    'export_excel' => $rootPath . '/app/Controllers/export_excel.php',
-    'masyarakat'   => $rootPath . '/app/Controllers/masyarakat.php',
-    'ceklogin'     => $rootPath . '/app/Controllers/ceklogin.php',
+    'dashboard'    => $rootPath . '/dashboard.php',
+    'lihat_data'   => $rootPath . '/lihat_data.php',
+    'export_excel' => $rootPath . '/export_excel.php',
+    'masyarakat'   => $rootPath . '/masyarakat.php',
+    'ceklogin'     => $rootPath . '/ceklogin.php',
 ];
 
 $route = $_GET['page'] ?? 'dashboard';

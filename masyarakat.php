@@ -2,103 +2,18 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once dirname(__DIR__, 2) . '/config/config.php';
-require_once dirname(__DIR__) . '/Helpers/helpers.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/helpers.php';
 
 /* --- Ambil setting --- */
-$setting = fetch_settings($mysqli);
+$setting = fetch_settings();
 $harga  = setting_value($setting, 'harga');
 $berasV = setting_value($setting, 'beras');
 $jagungV = setting_value($setting, 'jagung');
 
-/* --- MODE PUBLIK (tanpa login) --- */
-if (empty($_SESSION['username'])) {
-    $query = "
-        SELECT 
-            f.id,
-            f.kepala AS nama_kepala,
-            COUNT(m.id) AS jumlah_anggota,
-            COALESCE(SUM(m.uang),0) AS jml_uang,
-            COALESCE(SUM(m.beras),0) AS jml_beras,
-            COALESCE(SUM(m.jagung),0) AS jml_jagung,
-            COALESCE(f.infaq,0) AS infaq
-        FROM families f
-        LEFT JOIN members m ON f.id = m.family_id
-        GROUP BY f.id
-        ORDER BY f.id ASC
-    ";
-    $result = $mysqli->query($query);
-
-    // total keseluruhan (hindari dobel infaq per anggota)
-    $totalQ = "
-        SELECT 
-            SUM(a.jml_uang * ?)   AS total_uang,
-            SUM(a.jml_beras * ?)  AS total_beras,
-            SUM(a.jml_jagung * ?) AS total_jagung,
-            SUM(a.infaq)          AS total_infaq
-        FROM (
-            SELECT 
-                COALESCE(SUM(m.uang),0)   AS jml_uang,
-                COALESCE(SUM(m.beras),0)  AS jml_beras,
-                COALESCE(SUM(m.jagung),0) AS jml_jagung,
-                COALESCE(f.infaq,0)       AS infaq
-            FROM families f
-            LEFT JOIN members m ON f.id = m.family_id
-            GROUP BY f.id
-        ) a
-    ";
-    $stmtT = $mysqli->prepare($totalQ);
-    $stmtT->bind_param("ddd", $harga, $berasV, $jagungV);
-    $stmtT->execute();
-    $total = $stmtT->get_result()->fetch_assoc();
-    $stmtT->close();
-
-    /* --- MODE LOGIN (khusus keluarga tertentu) --- */
-} else {
-    $username = $_SESSION['username']; // diasumsikan = nama kepala keluarga
-    $query = "
-        SELECT 
-            f.id,
-            f.kepala AS nama_kepala,
-            COUNT(m.id) AS jumlah_anggota,
-            COALESCE(SUM(m.uang),0) AS jml_uang,
-            COALESCE(SUM(m.beras),0) AS jml_beras,
-            COALESCE(SUM(m.jagung),0) AS jml_jagung,
-            COALESCE(f.infaq,0) AS infaq
-        FROM families f
-        LEFT JOIN members m ON f.id = m.family_id
-        WHERE f.kepala = ?
-        GROUP BY f.id
-    ";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $stmt->close();
-}
-
-// Koleksi data untuk tabel dan ringkasan
+// Koleksi data kosong karena database dinonaktifkan.
 $families = [];
-while ($row = $result->fetch_assoc()) {
-    $families[] = $row;
-}
-
-if (empty($_SESSION['username'])) {
-    $aggregate = [
-        'uang'   => (float)($total['total_uang'] ?? 0),
-        'beras'  => (float)($total['total_beras'] ?? 0),
-        'jagung' => (float)($total['total_jagung'] ?? 0),
-        'infaq'  => (float)($total['total_infaq'] ?? 0),
-    ];
-} else {
-    $aggregate = ['uang' => 0.0, 'beras' => 0.0, 'jagung' => 0.0, 'infaq' => 0.0];
-    foreach ($families as $row) {
-        $aggregate['uang']   += ((int)($row['jml_uang'] ?? 0)) * $harga;
-        $aggregate['beras']  += ((float)($row['jml_beras'] ?? 0)) * $berasV;
-        $aggregate['jagung'] += ((float)($row['jml_jagung'] ?? 0)) * $jagungV;
-        $aggregate['infaq']  += (float)($row['infaq'] ?? 0);
-    }
-}
+$aggregate = ['uang' => 0.0, 'beras' => 0.0, 'jagung' => 0.0, 'infaq' => 0.0];
 
 $totalFamilies = count($families);
 ?>
@@ -109,7 +24,7 @@ $totalFamilies = count($families);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>My Zakat</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/public.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/public.css">
 </head>
 
 <body>
@@ -197,29 +112,33 @@ $totalFamilies = count($families);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($families as $row): ?>
-                                <?php
-                                $jmlU = (int)($row['jml_uang'] ?? 0);
-                                $jmlB = (int)($row['jml_beras'] ?? 0);
-                                $jmlJ = (int)($row['jml_jagung'] ?? 0);
-                                $infaq = (int)($row['infaq'] ?? 0);
+                            <?php if (empty($families)): ?>
+                                <tr><td colspan="6">Data tidak tersedia karena database dinonaktifkan.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($families as $row): ?>
+                                    <?php
+                                    $jmlU = (int)($row['jml_uang'] ?? 0);
+                                    $jmlB = (int)($row['jml_beras'] ?? 0);
+                                    $jmlJ = (int)($row['jagung'] ?? 0);
+                                    $infaq = (int)($row['infaq'] ?? 0);
 
-                                $uangRp   = $jmlU * $harga;
-                                $berasKg  = $jmlB * $berasV;
-                                $jagungKg = $jmlJ * $jagungV;
-                                ?>
-                                <tr>
-                                    <td>
-                                        <strong><?= htmlspecialchars($row['nama_kepala']); ?></strong><br>
-                                        <small>(+ <?= max(0, (int)$row['jumlah_anggota'] - 1); ?> anggota)</small>
-                                    </td>
-                                    <td><?= (int)$row['jumlah_anggota']; ?></td>
-                                    <td><?= format_rupiah((float)$uangRp); ?></td>
-                                    <td><?= number_format((float)$berasKg, 1); ?></td>
-                                    <td><?= number_format((float)$jagungKg, 1); ?></td>
-                                    <td><?= format_rupiah((float)$infaq); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
+                                    $uangRp   = $jmlU * $harga;
+                                    $berasKg  = $jmlB * $berasV;
+                                    $jagungKg = $jmlJ * $jagungV;
+                                    ?>
+                                    <tr>
+                                        <td>
+                                            <strong><?= htmlspecialchars($row['nama_kepala']); ?></strong><br>
+                                            <small>(+ <?= max(0, (int)$row['jumlah_anggota'] - 1); ?> anggota)</small>
+                                        </td>
+                                        <td><?= (int)$row['jumlah_anggota']; ?></td>
+                                        <td><?= format_rupiah((float)$uangRp); ?></td>
+                                        <td><?= number_format((float)$berasKg, 1); ?></td>
+                                        <td><?= number_format((float)$jagungKg, 1); ?></td>
+                                        <td><?= format_rupiah((float)$infaq); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

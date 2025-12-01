@@ -3,48 +3,21 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 ob_start();
-require_once dirname(__DIR__, 2) . '/config/config.php';
-require_once dirname(__DIR__) . '/Helpers/helpers.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/family_service.php';
 
-// pastikan koneksi tersedia
-if (!isset($mysqli) || !$mysqli instanceof mysqli) {
-    die("Koneksi database tidak terbentuk. Pastikan config.php sudah benar.");
-}
-
 /* load setting */
-$setting = fetch_settings($mysqli);
+$setting = fetch_settings();
 
-/* HAPUS keluarga */
-if (isset($_POST['hapus_index'])) {
-    $id = intval($_POST['hapus_index']);
-    // foreign key dengan ON DELETE CASCADE akan hapus members otomatis
-    delete_family($mysqli, $id);
-    header("Location: index.php?page=lihat_data");
-    exit;
-}
-
-/* RESET semua */
-if (isset($_POST['reset_semua'])) {
-    reset_all_families($mysqli);
-    header("Location: index.php?page=lihat_data");
-    exit;
-}
-
-/* UPDATE keluarga (edit) */
-if (isset($_POST['update_index'])) {
-    $fid = intval($_POST['update_index']);
-    $infaq = isset($_POST['infaq']) ? INFAQ_VALUE : 0;
-
-    $members = collect_members_from_post($_POST);
-    replace_family($mysqli, $fid, $infaq, $members);
-
-    header("Location: index.php?page=lihat_data");
-    exit;
+// Semua aksi dinonaktifkan; tampilkan pesan bila ada POST.
+$infoMessage = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $infoMessage = 'Fitur data dinonaktifkan karena tidak ada database yang terhubung.';
 }
 
 /* fetch data */
-$data = fetch_all_families($mysqli);
+$data = fetch_all_families();
 
 $overallTotals = calculate_overall_totals($data, $setting);
 ?>
@@ -55,7 +28,7 @@ $overallTotals = calculate_overall_totals($data, $setting);
     <meta charset="utf-8">
     <title>Lihat Data - Infaq</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
 </head>
 
 <body>
@@ -71,8 +44,12 @@ $overallTotals = calculate_overall_totals($data, $setting);
         <section class="main">
             <h2>Data Keluarga Tersimpan</h2>
 
+            <?php if ($infoMessage): ?>
+                <p class="card" style="background:#fff3cd;color:#856404;"><?= htmlspecialchars($infoMessage); ?></p>
+            <?php endif; ?>
+
             <?php if (empty($data)): ?>
-                <p>Belum ada data.</p>
+                <p>Data tidak tersedia (database dinonaktifkan).</p>
             <?php else: ?>
                 <?php foreach ($data as $i => $family): ?>
                     <div class="card family-card">

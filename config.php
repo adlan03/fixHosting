@@ -3,7 +3,7 @@
 
 // ====== PATH & URL BASE ======
 if (!defined('BASE_PATH')) {
-    define('BASE_PATH', dirname(__DIR__));
+    define('BASE_PATH', __DIR__);
 }
 
 if (!defined('BASE_URL')) {
@@ -19,18 +19,11 @@ if (!defined('BASE_URL')) {
         define('BASE_URL', $scheme . '://' . $host . '/' . $prefix);
     } else {
         // Ubah nilai berikut sesuai direktori root proyek saat lokal
-        define('BASE_URL', 'http://localhost/fixHosting/');
+        define('BASE_URL', 'http://localhost/');
     }
 }
 
-// ====== KONEKSI DATABASE ======
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "db_infaq";
-
-$mysqli = new mysqli($host, $user, $pass, $db);
-if ($mysqli->connect_errno) {
-    die("Koneksi database gagal: " . $mysqli->connect_error);
-}
-$mysqli->set_charset('utf8mb4');
+// ====== KONEKSI DATABASE (DINONAKTIFKAN) ======
+// Hosting tidak menyediakan database; semua fitur berbasis data dinonaktifkan.
+// Tetap sediakan variabel agar require lain tidak error.
+$mysqli = null;
